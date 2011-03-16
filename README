@@ -1,6 +1,7 @@
 # clojure-neo4j-rest
 
-FIXME: write description
+Neo4j REST Api for Clojure.
+incomplete and still a work in progress
 
 ## Usage
 
