@@ -77,9 +77,36 @@
             true)
         (catch Exception e false)))
 
-;(def get-property [node property])
-;(def set-property [node property value])
-;(def delete-property [node property])
+(defn get-property-url
+    [obj property]
+    (let [raw-url (obj :property)] 
+        (string/replace-re #"\{.*\}" property raw-url)))
+    
+(defn get-property 
+    "gets a property of a node"
+    [node property]
+    (let [prop-url (get-property-url node property)]
+        (try
+            (get-json prop-url)
+            (catch Exception e nil))))
+
+(defn set-property 
+    "sets a property on a node"
+    [node property value]
+    (let [prop-url (get-property-url node property)]
+        (put-json prop-url value)))
+
+(defn delete-property 
+    [node property]
+    (let [prop-url (get-property-url node property)]
+        (client/delete prop-url)))
+
+(defn create-relationship 
+  "creates a relationshp between two nodes"
+  [start-node end-node rel-type data]
+  (let [rel-url (start-node :create_relationship)
+        end-node-url (end-node :self)]
+    (post-json rel-url { "to" end-node-url, "data" data, "type" rel-type})))
 
 (def All :all)
 (def In :in)
