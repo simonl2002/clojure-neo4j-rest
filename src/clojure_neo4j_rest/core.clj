@@ -41,6 +41,10 @@
   (let [ref-node-url (dbroot :reference_node)]
     (get-node ref-node-url)))
 
+;
+; Node funtions
+;
+
 (defn create-node 
   "Creates a node. on success returns the node, on fail returns nil"
   [dbroot properties]
@@ -56,6 +60,9 @@
       true)
     (catch Exception e false)))
 
+;Property related functions
+;They work on both nodes and relationships
+
 (defn set-properties
   "set properties on a node. overwriting any that may already exist"
   [node properties]
@@ -63,16 +70,16 @@
     (put-json prop-url properties)))
 
 (defn properties
-  "gets the properties of a node"
-  [node]
-  (let [prop-url (node :properties)]
+  "gets the properties of a node/relationship"
+  [obj]
+  (let [prop-url (obj :properties)]
     (get-json prop-url)))
 
 (defn delete-properties
   "deletes all the properties of a node"
-  [node]
+  [obj]
   (try
-    (let [prop-url (node :properties)]
+    (let [prop-url (obj :properties)]
       (client/delete prop-url)
       true)
     (catch Exception e false)))
@@ -84,22 +91,24 @@
 
 (defn get-property 
   "gets a property of a node"
-  [node property]
-  (let [prop-url (get-property-url node property)]
+  [obj property]
+  (let [prop-url (get-property-url obj property)]
     (try
       (get-json prop-url)
       (catch Exception e nil))))
 
 (defn set-property 
   "sets a property on a node"
-  [node property value]
-  (let [prop-url (get-property-url node property)]
+  [obj property value]
+  (let [prop-url (get-property-url obj property)]
     (put-json prop-url value)))
 
 (defn delete-property 
-  [node property]
-  (let [prop-url (get-property-url node property)]
+  [obj property]
+  (let [prop-url (get-property-url obj property)]
     (client/delete prop-url)))
+
+; Relationship related functions
 
 (defn create-relationship 
   "creates a relationshp between two nodes"
@@ -107,6 +116,12 @@
   (let [rel-url (start-node :create_relationship)
         end-node-url (end-node :self)]
     (post-json rel-url { "to" end-node-url, "data" data, "type" rel-type})))
+
+(defn delete-relationship
+  "deletes a relationship"
+  [rel]
+  (let [rel-url (rel :self)]
+    (client/delete rel-url)))
 
 (def All :all)
 (def In :in)
