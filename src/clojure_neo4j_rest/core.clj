@@ -120,8 +120,11 @@
 (defn delete-relationship
   "deletes a relationship"
   [rel]
-  (let [rel-url (rel :self)]
-    (client/delete rel-url)))
+  (try 
+    (let [rel-url (rel :self)] 
+      (client/delete rel-url)
+      true)
+    (catch Exception e false)))
 
 (def All :all)
 (def In :in)
@@ -159,3 +162,31 @@
   "gets that start node of a relationship"
   [relationship]
   (get-relationship-node relationship :start))
+
+;
+; Index related functions
+;
+
+(defn node-indices
+  "gets existing node indices"
+  [dbroot]
+  (let [index-url (dbroot :node_index)] 
+    (get-json index-url)))
+
+(defn relationship-indices
+  "returns existing relationship indices"
+  [dbroot]
+  (let [index-url (dbroot :relationship_index)]
+    (get-json index-url)))
+
+(defn index-type
+  "gets the type of an index"
+  [index]
+  (index :type))
+
+(defn index-provider
+  "returns the provider of the index"
+  [index]
+  (index :provider))
+
+

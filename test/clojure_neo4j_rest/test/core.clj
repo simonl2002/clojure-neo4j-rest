@@ -24,3 +24,25 @@
       (is (true? (delete-properties node)))
       (is (empty? (properties node)))
       (is (true? (delete-node node))))))
+
+(deftest rel-stuff
+  (testing "relationship goodness"
+    (let [root (db-root *root-url*)
+          node0 (create-node root { :name "node0" :value "0"})
+          node1 (create-node root { :name "node1" :value "1"})
+          rel0 (create-relationship node0 node1 "loves" { :intensity "high" })
+          rel1 (create-relationship node1 node0 "hates" {})]
+      (is (not (nil? rel0)))
+      (is (not (nil? rel1)))
+      (is (= node0 (start-node rel0)))
+      (is (= node1 (end-node rel0)))
+      (is (= node1 (start-node rel1)))
+      (is (= node0 (end-node rel1)))
+      (is (= "high" (get-property rel0 "intensity")))
+      (is (= 2 (count (relationships node0 All))))
+      (is (= 1 (count (relationships node0 Out))))
+      (is (true? (delete-relationship rel0)))
+      (is (true? (delete-relationship rel1)))
+      (is (true? (delete-node node0)))
+      (is (true? (delete-node node1))))))
+
