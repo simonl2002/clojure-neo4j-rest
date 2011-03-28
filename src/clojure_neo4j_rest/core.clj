@@ -1,6 +1,7 @@
 (ns clojure-neo4j-rest.core
   (:require 
     [clj-http.client :as client]
+    [clj-http.util :as http-util]
     [clojure.contrib.json :as json]
     [clojure.contrib.string :as string]))
 
@@ -41,6 +42,10 @@
   (let [ref-node-url (dbroot :reference_node)]
     (get-node ref-node-url)))
 
+(defn- obj-url
+  "returns the objs url"
+  [obj]
+  (get obj :self))
 ;
 ; Node funtions
 ;
@@ -55,7 +60,7 @@
   "delets a node. returns True if sucessful, false if not"
   [node]
   (try 
-    (let [node-url (node :self)]
+    (let [node-url (obj-url node)]
       (client/delete node-url)
       true)
     (catch Exception e false)))
@@ -167,6 +172,13 @@
 ; Index related functions
 ;
 
+(defn create-node-index
+  "creates a node index with the specified name and config"
+  [dbroot name type provider]
+  (let [index-url (dbroot :node_index)
+        config { "type" type, "provider" provider }]
+    (post-json index-url { "name" name, "config" config })))
+
 (defn node-indices
   "gets existing node indices"
   [dbroot]
@@ -179,6 +191,12 @@
   (let [index-url (dbroot :relationship_index)]
     (get-json index-url)))
 
+(defn get-node-index
+  "gets a node index with the specified name"
+  [dbroot name]
+  (let [indices (node-indices dbroot)]
+    (get indices (keyword name))))
+
 (defn index-type
   "gets the type of an index"
   [index]
@@ -189,4 +207,21 @@
   [index]
   (index :provider))
 
+(defn- index-key-val-url
+  [index the-key value]
+  (let [template-url (index :template)
+        key-sub-url (string/replace-re #"\{key\}" the-key template-url)]
+        (string/replace-re #"\{value\}" (http-util/url-encode value) key-sub-url)))
+  
+(defn add-to-index
+  "adds the item to the index"
+  [index the-key value obj]
+  (let [url (index-key-val-url index the-key value)]
+    (post-json url (obj-url obj))))
+
+(defn index-get
+  "does exact match index query"
+  [index the-key value]
+  (let [url (index-key-val-url index the-key value)]
+    (get-json url)))
 
