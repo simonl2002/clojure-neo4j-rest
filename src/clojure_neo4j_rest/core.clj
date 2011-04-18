@@ -225,3 +225,12 @@
   (let [url (index-key-val-url index the-key value)]
     (get-json url)))
 
+(defn delete-from-index
+  "deletes a key value pair from index"
+  [index obj]
+  (try 
+    (let [url (obj :indexed)] 
+      (client/delete url)
+      true)
+    (catch Exception e false)))
+
